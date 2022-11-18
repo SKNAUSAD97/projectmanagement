@@ -58,6 +58,7 @@
                                 <tr>
                                     <th>Title</th>
                                     <th>Date Range</th>
+                                    <th>Reason <small>(If any)</small></th>
                                     <th>Action</th>
                                 </tr>
                                 @if($project->milestones != '')
@@ -76,6 +77,12 @@
                                                     </span>
                                                 </div>
                                                 <input type="text" class="form-control float-right reservation" value="{{ $item->date_range }}" name="milestones[{{ $key }}][date_range]">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control"  name="milestones[{{ $key }}][reason]" placeholder="If Any Changes Occours" />
+                                                <input type="hidden" name="milestones[{{ $key }}][milestone_id]" value="{{ $item->id }}" />
                                             </div>
                                         </td>
                                         <td>
@@ -98,6 +105,11 @@
                                             </span>
                                         </div>
                                         <input type="text" class="form-control float-right reservation" name="milestones[{{ $key+1 }}][date_range]">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" disabled class="form-control"  name="milestones[{{ $key+1 }}][reason]" placeholder="If Any Changes Occours" />
                                         </div>
                                     </td>
                                     <td>
@@ -164,7 +176,7 @@ $(document).ready(function(){
     $("#add-btn").click(function(){
         ++i;
 
-        $("#dynamicAddRemove").append('<tr><td><div class="input-group"><input type="text" class="form-control" name="milestones['+i+'][title]" placeholder="Title" /></div></td><td><div class="input-group"><div class="input-group-prepend"><span class="input-group-text"><i class="far fa-calendar-alt"></i></span></div><input type="text" class="form-control float-right reservation" name="milestones['+i+'][date_range]"></div></td><td><button type="button" class="btn btn-danger btn-sm remove-tr">Remove</button></td></tr>');
+        $("#dynamicAddRemove").append('<tr><td><div class="input-group"><input type="text" class="form-control" name="milestones['+i+'][title]" placeholder="Title" /></div></td><td><div class="input-group"><div class="input-group-prepend"><span class="input-group-text"><i class="far fa-calendar-alt"></i></span></div><input type="text" class="form-control float-right reservation" name="milestones['+i+'][date_range]"></div></td><td><div class="input-group"><input type="text" class="form-control" name="milestones['+i+'][reason]" placeholder="If Any Changes Occours" disabled /></div></td><td><button type="button" class="btn btn-danger btn-sm remove-tr">Remove</button></td></tr>');
         $('.reservation').daterangepicker()    
     });
 

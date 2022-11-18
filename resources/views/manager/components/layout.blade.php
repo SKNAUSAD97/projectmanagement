@@ -48,6 +48,9 @@
       .buttons-collection{
         background-color: #315b80;
       }
+      .alert-success{
+        background-color: #007bff;
+      }
     </style>
     @endif
 </head>

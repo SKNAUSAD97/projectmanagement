@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\manager;
 
 use App\Http\Controllers\Controller;
+use App\Models\Milestonecomments;
 use Illuminate\Http\Request;
-use App\Models\Project;
 use App\Models\Milestone;
-use Auth;
+use App\Models\Project;
 use DataTables;
+use Auth;
+
 
 class homeController extends Controller
 {
@@ -38,14 +40,14 @@ class homeController extends Controller
 
     public function getProjects(request $request){
         if ($request->ajax()) {
-            $data = Project::with('milestones')->get();
+            $data = Project::get();
             return Datatables::of($data)->addIndexColumn()
-                ->addColumn('action', function($row){
+                ->addColumn('action', function(Project $project){
                     $btn = '<a class="nav-link btn-sm more btn btn-primary" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="fa fa-bars"></i>
                   </a>
                   <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="'. route("/edit-projects", $row->id) .'">
+                    <a class="dropdown-item" href="'. route("/edit-projects", $project->id) .'">
                         <i class="fa fa-edit"></i>
                         Edit
                     </a>
@@ -55,7 +57,7 @@ class homeController extends Controller
                         Delete
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="javascript::void(0)" data-toggle="modal" data-target="#modal-lg" id="test'.$project->id.'" data-id="'. $project->name .'" onclick="milestones('. $project->id .')">
                         <i class="fa fa-eye"></i>
                         View Milestones
                     </a>
@@ -142,7 +144,12 @@ class homeController extends Controller
 
     public function updateProjects($id, request $request){
         try{
-            Milestone::where('project_id', $id)->delete();
+            $existing_milestones_id = Milestone::where('project_id', $id)->pluck('id');
+            foreach ($existing_milestones_id as $key => $value) {
+                $existing_milestones_id[$value] = false;
+                unset($existing_milestones_id[$key]);
+            }
+
             $project = [
                 'name' => $request->name,
                 'initiataion_date' => isset($request->initiataion_date) ? date('Y-m-d', strtotime($request->initiataion_date)) : Null,
@@ -156,7 +163,6 @@ class homeController extends Controller
 
             if(isset($request->milestones)){
                 foreach ($request->milestones as $key => $milestones) {
-                    
                     $dateRange = isset($milestones['date_range']) ? str_replace(' ', '', explode("-",$milestones['date_range'])) : [];
                     $from = isset($dateRange[0]) ? date('Y-m-d', strtotime($dateRange[0])) : Null;
                     $to = isset($dateRange[1]) ? date('Y-m-d', strtotime($dateRange[1])) : Null;
@@ -169,13 +175,73 @@ class homeController extends Controller
                         'from' => $from,
                         'to' => $to
                     ];
+
                     if($title != Null){
-                        Milestone::create($milestone);
+                        // Updating the data if existing
+                        if(!isset($milestones['milestone_id'])){
+                            Milestone::create($milestone);
+                        }else{
+                            Milestone::find($milestones['milestone_id'])->update($milestone);
+                            $existing_milestones_id[$milestones['milestone_id']] = true;
+
+                            // For Comment Section
+                            if(isset($milestones['reason'])){
+                                if($milestones['reason'] != ''){
+                                    $previous_milest_data = Milestone::find($milestones['milestone_id']);
+                                    
+                                    $milestone_id = $milestones['milestone_id'];
+                                    $updated_date = date('Y-m-d');
+                                    $changes_from = $previous_milest_data->from . ' - ' . $previous_milest_data->to;
+                                    $changes_to = $from . ' - ' . $to;
+                                    $reason = $milestones['reason'];
+
+                                    $milestonecomments = new Milestonecomments;
+                                    $milestonecomments->milestone_id = $milestone_id;
+                                    $milestonecomments->updated_date = $updated_date;
+                                    $milestonecomments->changes_from = $changes_from;
+                                    $milestonecomments->changes_to = $changes_to;
+                                    $milestonecomments->reason = $reason;
+                                    $milestonecomments->save();
+                                }
+                            }
+                        }
                     }
                 }
             }
-        
+
+            foreach ($existing_milestones_id as $key => $value) {
+                if($value == false){
+                    Milestone::find($key)->delete();
+                }
+            }
             return redirect('/managers/projects')->with('success-message', 'Project Updated Successfully...');
+        }catch(\Exception $e){
+            return ($e->getMessage());
+        }
+    }
+
+    public function getMilestones($id, request $request){
+        try{
+            if ($request->ajax()) {
+                $data = Milestone::where('project_id', $id)->get();
+                return Datatables::of($data)->addIndexColumn()
+                            ->addColumn('action', function(Milestone $milestone){
+                                $btn = '<a class="nav-link btn-sm more btn btn-primary" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-bars"></i>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="javascript::void(0)" data-toggle="modal" data-target="#modal-default" id="test'.$milestone->id.'" data-id="'. $milestone->name .'">
+                                    <i class="fa fa-eye"></i>
+                                    View Comments
+                                </a>
+                            </div>';
+                                return $btn;
+                            })
+                            ->rawColumns(['action'])
+                    ->make(true);
+            }
+            return view('manager/pages/projects');
+
         }catch(\Exception $e){
             return ($e->getMessage());
         }

@@ -55,6 +55,7 @@
               <i class="nav-icon fas fa-th"></i>
               <p>
                 Projects
+                <span class="badge badge-info right">6</span>
               </p>
             </a>
           </li>
