@@ -37,6 +37,7 @@ Route::group(['prefix'=>'managers'], function(){
     
     // Milestones Routes
     Route::get('/get-milestones/{id}', [App\Http\Controllers\manager\homeController::class, 'getMilestones'])->name('/get-milestones')->middleware(['auth']);
+    Route::get('/get-milestones-comments/{id}', [App\Http\Controllers\manager\homeController::class, 'getMilestonesComments'])->name('/get-milestones-comments')->middleware(['auth']);
 });
 
 

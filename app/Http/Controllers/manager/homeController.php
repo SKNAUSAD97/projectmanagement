@@ -230,7 +230,7 @@ class homeController extends Controller
                                 <i class="fa fa-bars"></i>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="javascript::void(0)" data-toggle="modal" data-target="#modal-default" id="test'.$milestone->id.'" data-id="'. $milestone->name .'">
+                                <a class="dropdown-item" href="javascript::void(0)" data-toggle="modal" data-target="#modal-default" onclick="getMilestonesComments('.$milestone->id.')">
                                     <i class="fa fa-eye"></i>
                                     View Comments
                                 </a>
@@ -243,6 +243,85 @@ class homeController extends Controller
             return view('manager/pages/projects');
 
         }catch(\Exception $e){
+            return ($e->getMessage());
+        }
+    }
+
+    public function getMilestonesComments($milestone_id){
+        try {
+            $milestone_comments = Milestonecomments::where('milestone_id', $milestone_id)->get();
+            $comments = '';
+            foreach ($milestone_comments as $key => $data) {
+                $comments = '
+                <div class="timeline">
+                    <div class="time-label">
+                    <span class="bg-red">'. date('d M. Y', strtotime($data->updated_date)) .'</span>
+                    </div>
+                    <div>
+                    <i class="fas fa-user bg-green"></i>
+                    <div class="timeline-item">
+                        <span class="time"><i class="fas fa-clock"></i> '. date('H:i', strtotime($data->updated_at)) .'</span>
+                        <h3 class="timeline-header">
+                            <a href="#">Manager SAIS</a> 
+                            updated this milestones
+                        </h3>
+                        <div class="timeline-body">
+                            <span class="heading">
+                            Previous Date Range
+                            </span>
+                            <span>
+                            - '. $data->changes_from .'
+                            </span>
+                            <span class="heading">
+                            Updated Date Range To
+                            </span>
+                            <span>
+                            - '. $data->changes_from .'
+                            </span>
+                            <span class="heading">
+                            Reason To Change
+                            </span>
+                            <span>
+                            - '. $data->reason .'
+                            </span>
+                        </div>
+                    </div>
+                    </div>
+                    <div>
+                    <i class="fas fa-user bg-green"></i>
+                    <div class="timeline-item">
+                        <span class="time"><i class="fas fa-clock"></i> 12:05</span>
+                        <h3 class="timeline-header">
+                            <a href="#">Manager SAIS</a> 
+                            updated this milestones
+                        </h3>
+                        <div class="timeline-body">
+                            <span class="heading">
+                            Previous Date Range
+                            </span>
+                            <span>
+                            - 2022-11-25 - 2022-11-30
+                            </span>
+                            <span class="heading">
+                            Updated Date Range To
+                            </span>
+                            <span>
+                            - 2022-11-25 - 2022-11-30
+                            </span>
+                            <span class="heading">
+                            Reason To Change
+                            </span>
+                            <span>
+                            - Yes Something Has changed
+                            </span>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                ';
+            }
+            
+        } catch (\Exception $e) {
             return ($e->getMessage());
         }
     }
